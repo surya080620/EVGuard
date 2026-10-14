@@ -1,0 +1,286 @@
+# EV Charging Station Opportunity Analysis
+
+## 23CSE301 Machine Learning Capstone — Review 2
+
+This project analyzes EV charging-station data to study station characteristics and identify locations with different levels of **Profit Potential**. Review 2 extends the Review 1 work by completing Classification Part B, producing a consolidated comparison of all 10 classification algorithms, and performing unsupervised clustering.
+
+## 1. Problem Statement
+
+EV charging-station opportunity depends on factors such as geographic location, station age, charging capacity, connector availability, network information, facility type, ownership, access, and other station characteristics.
+
+The classification task is to predict the **`Profit_Potential`** category of an EV charging location:
+- Low
+- Medium
+- High
+
+The clustering task is to discover natural groups of EV charging stations using station, location, charging, facility, network, and access characteristics without providing the target label to the clustering algorithms.
+
+## 2. Dataset Description
+
+The current notebook run uses an EV charging-station dataset containing **65,134 records and 23 columns**.
+
+The dataset contains information such as:
+- Station location: Latitude, Longitude, City, State, ZIP
+- Station age and opening information
+- EV Level 1, Level 2, and DC Fast charging counts
+- Connector information
+- EV network information
+- Facility type
+- Owner type
+- Access information
+- Pricing and workplace-charging indicators
+- Competition and distance-related information
+- `Profit_Potential`
+- `Opportunity_Score`
+
+### Classification Target
+
+`Profit_Potential` is the classification target with three categories: **Low, Medium, and High**.
+
+### Feature Selection and Leakage Prevention
+
+The following fields are excluded from classification predictors:
+- `Opportunity_Score`
+- `Nearest_Station_Distance_km`
+- `Competition_Level`
+
+These fields are related to the construction of the opportunity/profit-potential label and are therefore excluded to reduce target leakage.
+
+For the classification modelling run, a reproducible stratified sample of **8,000 records** is used for practical execution time. The full dataset is still used for dataset auditing and exploratory analysis.
+
+## 3. Review 2 Objectives
+
+### Classification Part B
+
+Implement the five required Part-B classification algorithms:
+1. Random Forest Classifier
+2. AdaBoost Classifier
+3. Gradient Boosting Classifier
+4. Bagging Classifier
+5. MLP Classifier
+
+The five Review 1 Part-A classifiers are also included as benchmark models so that all **10 classification algorithms** can be compared using one common evaluation framework.
+
+### Clustering
+
+Implement:
+1. K-Means Clustering
+2. Agglomerative / Hierarchical Clustering
+
+For hierarchical clustering, Ward, Complete, and Average linkage are compared.
+
+## 4. Methodology
+
+### Data Preparation
+
+1. Load the dataset.
+2. Inspect shape, data types, missing values, duplicates, and target distribution.
+3. Perform feature engineering where required.
+4. Remove target-derived/leakage-prone fields from model inputs.
+5. Separate input features (`X`) and target (`y`) for classification.
+6. Split the data using a stratified train/test split.
+7. Handle missing values.
+8. Encode categorical variables.
+9. Scale numerical features where required.
+10. Apply the modelling algorithms using a reproducible random state of 42.
+
+### Classification Evaluation
+
+All classification models are evaluated on the same held-out test set using:
+- Accuracy
+- Weighted Precision
+- Weighted Recall
+- Weighted F1-score
+- ROC-AUC using One-vs-Rest
+
+Confusion matrices and classification reports are also generated.
+
+### Model Selection and Tuning
+
+Random Forest is tuned using `GridSearchCV`. The baseline and tuned models are evaluated on the same held-out test set so that the effect of tuning can be compared fairly. Cross-validation is also performed for the strongest baseline candidates.
+
+### Clustering Evaluation
+
+The clustering models are evaluated using:
+- Silhouette Score
+- Davies-Bouldin Index
+- Calinski-Harabasz Index
+
+Required visualizations include:
+- K-Means Elbow Curve
+- Hierarchical Clustering Dendrogram
+- PCA-reduced 2D cluster plots
+- t-SNE cluster visualization
+
+`Profit_Potential` is not used as an input to clustering.
+
+## 5. Classification Results
+
+Results from the current executed Classification Part B notebook:
+
+| Rank by Weighted F1 | Algorithm | Accuracy | Weighted Precision | Weighted Recall | Weighted F1 | ROC-AUC |
+|---:|---|---:|---:|---:|---:|---:|
+| 1 | Bagging Classifier | 0.5844 | 0.5736 | 0.5844 | **0.5757** | 0.7634 |
+| 2 | Gradient Boosting Classifier | **0.6088** | **0.5912** | **0.6088** | 0.5715 | **0.7717** |
+| 3 | MLP Classifier | 0.5825 | 0.5662 | 0.5825 | 0.5687 | 0.7672 |
+| 4 | Logistic Regression | 0.5919 | 0.5789 | 0.5919 | 0.5597 | 0.7574 |
+| 5 | Random Forest Classifier | 0.6019 | 0.5794 | 0.6019 | 0.5542 | 0.7635 |
+| 6 | Decision Tree Classifier | 0.5781 | 0.5528 | 0.5781 | 0.5436 | 0.7305 |
+| 7 | K-Nearest Neighbors | 0.5538 | 0.5396 | 0.5538 | 0.5434 | 0.7500 |
+| 8 | Support Vector Machine | 0.5525 | 0.5327 | 0.5525 | 0.5201 | 0.7187 |
+| 9 | AdaBoost Classifier | 0.5419 | 0.3614 | 0.5419 | 0.4334 | 0.7241 |
+| 10 | Gaussian Naive Bayes | 0.4388 | 0.5256 | 0.4388 | 0.3629 | 0.6625 |
+
+### Classification Interpretation
+
+- **Bagging Classifier** achieved the highest weighted F1-score among the evaluated baseline models.
+- **Gradient Boosting** achieved the highest accuracy and ROC-AUC in the current run.
+- The final model should be justified using weighted F1 together with ROC-AUC, accuracy, and the confusion matrix.
+- The three-class target makes distinguishing the Medium class more difficult than the other classes in the current results.
+
+### Random Forest Tuning
+
+| Version | Accuracy | Weighted Precision | Weighted Recall | Weighted F1 | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| Baseline Random Forest | 0.5812 | 0.6087 | 0.5812 | 0.4980 | 0.7520 |
+| Tuned Random Forest | 0.6019 | 0.5794 | 0.6019 | 0.5542 | 0.7635 |
+
+The tuned Random Forest improved weighted F1 and ROC-AUC compared with the baseline configuration.
+
+## 6. Clustering Results
+
+K-Means was evaluated for candidate values of `k` from 2 to 8. The feature-only silhouette comparison selected **3 clusters**.
+
+| Method | Clusters | Silhouette Score | Davies-Bouldin Index | Calinski-Harabasz Index |
+|---|---:|---:|---:|---:|
+| Agglomerative - Average linkage | 3 | **0.8769** | **0.3122** | 86.3268 |
+| Agglomerative - Complete linkage | 3 | **0.8769** | **0.3122** | 86.3268 |
+| K-Means | 3 | 0.2890 | 1.7193 | **195.3380** |
+| Agglomerative - Ward linkage | 3 | 0.2079 | 2.1543 | 168.5575 |
+
+The clustering results should be interpreted using all three internal metrics rather than selecting a model from only one metric.
+
+## 7. Visualizations
+
+### Classification
+- Confusion matrix for each classification algorithm
+- Classification performance comparison
+- Random Forest feature-importance visualization
+- Model tuning comparison
+
+### Clustering
+- K-Means Elbow Curve
+- Silhouette trend by number of clusters
+- Hierarchical clustering Dendrogram
+- PCA-reduced 2D cluster plots
+- t-SNE cluster visualization
+- Cluster-size analysis
+
+## 8. Project Structure
+
+```text
+EV-Charging-Project/
+│
+├── notebooks/
+│   ├── Regression_and_Classification_PartA.ipynb
+│   ├── Classification_partB.ipynb
+│   ├── EV_Charging_Clustering_Review2_Simple.ipynb
+│   └── EV_Charging_Station.xlsx
+│
+├── README.md
+├── requirements.txt
+└── .gitignore
+```
+
+Update filenames above if the final repository uses different names.
+
+## 9. Environment Setup
+
+Recommended environment:
+- Python 3.x
+- Jupyter Notebook / JupyterLab
+- VS Code with Jupyter extension
+
+Install dependencies:
+
+```bash
+pip install pandas numpy matplotlib seaborn scikit-learn scipy openpyxl jupyter
+```
+
+Or, if `requirements.txt` is available:
+
+```bash
+pip install -r requirements.txt
+```
+
+## 10. How to Run
+
+### Step 1 — Clone the repository
+
+```bash
+git clone <your-github-repository-url>
+```
+
+### Step 2 — Open the project
+
+```bash
+cd <repository-folder>
+```
+
+Open the folder in VS Code.
+
+### Step 3 — Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 4 — Open the notebooks
+
+Run:
+1. `Regression_and_Classification_PartA.ipynb`
+2. `Classification_partB.ipynb`
+3. `EV_Charging_Clustering_Review2_Simple.ipynb`
+
+### Step 5 — Run all cells
+
+Execute the notebooks from top to bottom with outputs visible and no execution errors.
+
+## 11. Reproducibility
+
+A fixed random seed of `42` is used wherever applicable. The same classification train/test split is used for model comparison. Preprocessing is fitted on training data and applied to the test data to reduce data leakage.
+
+## 12. Review 2 Rubric Coverage
+
+| Rubric | Project Coverage |
+|---|---|
+| A1 — Five Part-B algorithms | Random Forest, AdaBoost, Gradient Boosting, Bagging, MLP |
+| A2 — Full comparison | One table with all 10 classifiers and Accuracy, Precision, Recall, F1, ROC-AUC |
+| A3 — Final model selection | Model comparison + Random Forest hyperparameter tuning + before/after metrics |
+| B1 — Clustering implementation | K-Means + Agglomerative clustering |
+| B2 — Clustering metrics | Silhouette, Davies-Bouldin, Calinski-Harabasz, Elbow, Dendrogram |
+| B3 — Cluster visualization | PCA plots + t-SNE |
+| C1 — Code quality | Structured sections, comments, reproducible execution |
+| C2 — README | Dataset, problem, results, setup, and execution instructions |
+| C3 — GitHub quality | Separate notebooks, requirements file, and meaningful commits |
+| D1 — Presentation | Problem → Data → Method → Results → Conclusion |
+| D2 — Viva | Algorithm, metric, result, and trade-off understanding |
+
+## 13. Team Contribution
+
+### Member 1 — Three Part-B algorithms
+- Random Forest
+- AdaBoost
+- Bagging
+
+### Member 2 — Two Part-B algorithms
+- Gradient Boosting
+- MLP Classifier
+
+The common preprocessing, comparison table, final evaluation, and documentation should be coordinated across the team.
+
+## 14. Conclusion
+
+Review 2 extends the EV charging-station opportunity analysis using supervised and unsupervised machine learning. Classification Part B adds five required algorithms and compares them with the five Review 1 Part-A models. Clustering provides an unsupervised view of station groups without using the `Profit_Potential` target.
+
+The current classification run shows Bagging with the strongest weighted F1-score among the baseline models, while Gradient Boosting provides the strongest accuracy and ROC-AUC. The clustering analysis compares K-Means and multiple Agglomerative linkage strategies using internal validation metrics and the required visualizations.
